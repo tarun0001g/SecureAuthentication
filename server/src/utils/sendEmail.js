@@ -7,7 +7,8 @@ export const sendVerificationEmail = async (
   name,
   verifyToken
 ) => {
-  const verificationLink = `http://localhost:5173/verify-email/${verifyToken}`;
+  const verificationLink =
+`http://localhost:5000/api/auth/verify-email/${verifyToken}`;
 
   await resend.emails.send({
     from: process.env.SENDER_EMAIL,
