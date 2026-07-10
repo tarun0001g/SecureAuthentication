@@ -2,6 +2,8 @@ import prisma from "../lib/prisma.js";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { sendVerificationEmail } from "../utils/sendEmail.js";
+import { generateToken } from "../utils/generateToken.js";
+import { sendResetPasswordEmail } from "../utils/sendResetPasswordEmail.js";
 
 export const registerUserService = async (data) => {
   const { name, email, password } = data;
@@ -72,6 +74,75 @@ export const registerUserService = async (data) => {
   };
 };
 
+export const loginUserService = async (data) => {
+  const { email, password } = data;
+
+  // Check required fields
+  if (!email || !password) {
+    return {
+      success: false,
+      statusCode: 400,
+      message: "Email and password are required.",
+    };
+  }
+
+  // Find user
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  // User not found
+  if (!user) {
+    return {
+      success: false,
+      statusCode: 404,
+      message: "User not found.",
+    };
+  }
+
+  // Check password
+  const isPasswordCorrect = await bcrypt.compare(
+    password,
+    user.password
+  );
+
+  if (!isPasswordCorrect) {
+    return {
+      success: false,
+      statusCode: 401,
+      message: "Invalid credentials.",
+    };
+  }
+
+  // Check email verification
+  if (!user.isVerified) {
+    return {
+      success: false,
+      statusCode: 403,
+      message: "Please verify your email first.",
+    };
+  }
+
+  // Generate JWT
+  const token = generateToken(user.id);
+
+  return {
+    success: true,
+    statusCode: 200,
+    message: "Login successful.",
+    data: {
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
+    },
+  };
+};
+
 export const verifyEmailService = async (token) => {
   // Find user by token
   const user = await prisma.user.findFirst({
@@ -114,5 +185,55 @@ export const verifyEmailService = async (token) => {
     success: true,
     statusCode: 200,
     message: "Email verified successfully.",
+  };
+};
+
+export const forgotPasswordService = async (email) => {
+  // Find user
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  // User not found
+  if (!user) {
+    return {
+      success: false,
+      statusCode: 404,
+      message: "User not found.",
+    };
+  }
+
+  // Generate reset token
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  // Token expires in 1 hour
+  const resetTokenExpiry = new Date(
+    Date.now() + 60 * 60 * 1000
+  );
+
+  // Save token in database
+  await prisma.user.update({
+    where: {
+      id: user.id,
+    },
+    data: {
+      resetToken,
+      resetTokenExpiry,
+    },
+  });
+
+  // Send reset email
+  await sendResetPasswordEmail(
+    user.email,
+    user.name,
+    resetToken
+  );
+
+  return {
+    success: true,
+    statusCode: 200,
+    message: "Password reset email sent successfully.",
   };
 };
