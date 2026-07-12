@@ -3,6 +3,8 @@ import {
   verifyEmailService,
   loginUserService,
   forgotPasswordService,
+  resetPasswordService,
+  getCurrentUserService,
 } from "../services/auth.service.js";
 
 
@@ -61,3 +63,33 @@ export const forgotPassword = async (req, res) => {
     });
   }
 };
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    const result = await resetPasswordService(token, password);
+
+    return res.status(result.statusCode).json(result);
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getCurrentUser = async (req, res) => {
+  try {
+    const result = await getCurrentUserService(req.user.id);
+
+    return res.status(result.statusCode).json(result);
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+

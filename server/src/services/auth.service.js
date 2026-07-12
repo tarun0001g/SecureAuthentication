@@ -237,3 +237,93 @@ export const forgotPasswordService = async (email) => {
     message: "Password reset email sent successfully.",
   };
 };
+
+export const resetPasswordService = async (  token,newPassword) => {
+
+  // ✅ Validate password
+  if (!newPassword) {
+    return {
+      success: false,
+      statusCode: 400,
+      message: "Password is required.",
+    };
+  }
+
+  // Find user by reset token
+  const user = await prisma.user.findFirst({
+    where: {
+      resetToken: token,
+    },
+  });
+
+  // Invalid token
+  if (!user) {
+    return {
+      success: false,
+      statusCode: 404,
+      message: "Invalid reset token.",
+    };
+  }
+
+  // Token expired
+  if (user.resetTokenExpiry < new Date()) {
+    return {
+      success: false,
+      statusCode: 400,
+      message: "Reset token has expired.",
+    };
+  }
+
+  // Hash new password
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  // Update password and clear token
+  await prisma.user.update({
+    where: {
+      id: user.id,
+    },
+    data: {
+      password: hashedPassword,
+      resetToken: null,
+      resetTokenExpiry: null,
+    },
+  });
+
+  return {
+    success: true,
+    statusCode: 200,
+    message: "Password reset successfully.",
+  };
+};
+
+export const getCurrentUserService = async (userId) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      isVerified: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!user) {
+    return {
+      success: false,
+      statusCode: 404,
+      message: "User not found.",
+    };
+  }
+
+  return {
+    success: true,
+    statusCode: 200,
+    message: "User fetched successfully.",
+    data: user,
+  };
+};
+
