@@ -5,6 +5,7 @@ import {
   forgotPasswordService,
   resetPasswordService,
   getCurrentUserService,
+  updateProfileService,
 } from "../services/auth.service.js";
 
 
@@ -83,6 +84,19 @@ export const resetPassword = async (req, res) => {
 export const getCurrentUser = async (req, res) => {
   try {
     const result = await getCurrentUserService(req.user.id);
+
+    return res.status(result.statusCode).json(result);
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const result = await updateProfileService(req.user.id, req.body);
 
     return res.status(result.statusCode).json(result);
   } catch (error) {
