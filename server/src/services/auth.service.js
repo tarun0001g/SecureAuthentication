@@ -189,6 +189,16 @@ export const verifyEmailService = async (token) => {
 };
 
 export const forgotPasswordService = async (email) => {
+
+  // Validate email
+  if (!email) {
+    return {
+      success: false,
+      statusCode: 400,
+      message: "Email is required.",
+    };
+  }
+
   // Find user
   const user = await prisma.user.findUnique({
     where: {
