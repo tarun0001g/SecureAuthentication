@@ -7,6 +7,41 @@ This project demonstrates a production-ready authentication workflow including *
 
 ---
 
+
+# 📷 Screenshots
+
+## 🔑 Login Page
+
+![Login](screenshots/login.png)
+---
+
+## 📝 Register Page
+
+![Register](screenshots/register.png)
+---
+
+## 📧 Forgot Password
+
+![Forgot Password](screenshots/forgot-password.png)
+---
+
+## 🔒 Reset Password
+
+![Reset Password](screenshots/reset-password.png)
+---
+
+## ✅ Verify Email
+
+![Verify Email](screenshots/verify-email.png)
+
+---
+
+## 📊 Dashboard
+
+![Dashboard](screenshots/dashboard.png)
+---
+
+
 ## 🚀 Features
 
 ### 🔑 Authentication
@@ -289,39 +324,6 @@ Login Again
 | GET | `/api/user/profile` | Get Current User |
 | PATCH | `/api/user/profile` | Update Profile |
 
----
-
-# 📷 Screenshots
-
-## 🔑 Login Page
-
-![Login](screenshots/login.png)
----
-
-## 📝 Register Page
-
-![Register](screenshots/register.png)
----
-
-## 📧 Forgot Password
-
-![Forgot Password](screenshots/forgot-password.png)
----
-
-## 🔒 Reset Password
-
-![Reset Password](screenshots/reset-password.png)
----
-
-## ✅ Verify Email
-
-![Verify Email](screenshots/verify-email.png)
-
----
-
-## 📊 Dashboard
-
-![Dashboard](screenshots/dashboard.png)
 ---
 
 # 📖 Learning Outcomes
