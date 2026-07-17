@@ -13,6 +13,9 @@ const ResetPassword = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -22,80 +25,103 @@ const ResetPassword = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  // Passwords must match
-  if (formData.password !== formData.confirmPassword) {
-    alert("Passwords do not match.");
-    return;
-  }
+    if (formData.password !== formData.confirmPassword) {
+      setMessage({ type: "error", text: "Passwords do not match." });
+      return;
+    }
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
+      setMessage({ type: "", text: "" });
 
-    const response = await resetPassword(token, {
-      password: formData.password,
-    });
+      const response = await resetPassword(token, {
+        password: formData.password,
+      });
 
-    alert(response.message);
-
-    navigate("/login");
-
-  } catch (error) {
-    alert(
-      error.response?.data?.message || "Something went wrong."
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+      setMessage({ type: "success", text: response.message });
+      setTimeout(() => navigate("/login"), 700);
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: error.response?.data?.message || "Something went wrong.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="auth-container">
+    <div className="auth-page">
       <div className="auth-card">
+        <div className="auth-brand">
+          <div className="auth-brand-mark">🔐</div>
+          <div>
+            <h1 className="auth-title">Set a new password</h1>
+            <p className="auth-subtitle">Choose a strong password to secure your account.</p>
+          </div>
+        </div>
 
-        <h1>Reset Password</h1>
-
-        <p>Enter your new password.</p>
-
-        <form onSubmit={handleSubmit}>
-
-          <div className="form-group">
-            <label>New Password</label>
-
-            <input
-              type="password"
-              name="password"
-              placeholder="Enter new password"
-              value={formData.password}
-              onChange={handleChange}
-            />
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="auth-group">
+            <label htmlFor="password">New Password</label>
+            <div className="auth-input-wrap">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Enter new password"
+                value={formData.password}
+                onChange={handleChange}
+              />
+              <span className="auth-input-icon">⎈</span>
+              <button
+                type="button"
+                className="auth-password-toggle"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
 
-          <div className="form-group">
-            <label>Confirm Password</label>
-
-            <input
-              type="password"
-              name="confirmPassword"
-              placeholder="Confirm password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-            />
+          <div className="auth-group">
+            <label htmlFor="confirmPassword">Confirm Password</label>
+            <div className="auth-input-wrap">
+              <input
+                id="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                placeholder="Confirm password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+              />
+              <span className="auth-input-icon">⎈</span>
+              <button
+                type="button"
+                className="auth-password-toggle"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+              >
+                {showConfirmPassword ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
 
-          <button type="submit">
-            {loading ? "Resetting..." : "Reset Password"}
+          <button className="auth-button" type="submit" disabled={loading}>
+            {loading ? "Resetting..." : "Reset password"}
           </button>
-
         </form>
 
-        <div className="links">
-          <Link to="/login">
+        {message.text ? (
+          <div className={`auth-message ${message.type}`}>{message.text}</div>
+        ) : null}
+
+        <div className="auth-link-row">
+          <Link className="auth-link" to="/login">
             Back to Login
           </Link>
         </div>
-
       </div>
     </div>
   );

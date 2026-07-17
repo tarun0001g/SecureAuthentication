@@ -4,99 +4,115 @@ import { loginUser } from "../services/authService";
 import "./Auth.css";
 import { useAuth } from "../context/AuthContext";
 
-
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-const [formData, setFormData] = useState({
-  email: "",
-  password: "",
-});
-
-const [loading, setLoading] = useState(false);
-
-const handleChange = (e) => {
-  setFormData({
-    ...formData,
-    [e.target.name]: e.target.value,
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
   });
-};
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
+  const [showPassword, setShowPassword] = useState(false);
 
-  try {
-    setLoading(true);
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
-    const response = await loginUser(formData);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    // Save JWT token
-   login(response.data.token, response.data.user);
-   
-    alert(response.message);
+    try {
+      setLoading(true);
+      setMessage({ type: "", text: "" });
 
-    // Redirect to dashboard (we'll create it later)
-    navigate("/dashboard");
+      const response = await loginUser(formData);
 
-  } catch (error) {
-    alert(
-      error.response?.data?.message || "Something went wrong."
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+      login(response.data.token, response.data.user);
+      setMessage({ type: "success", text: response.message });
+
+      setTimeout(() => navigate("/dashboard"), 450);
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: error.response?.data?.message || "Something went wrong.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="auth-container">
+    <div className="auth-page">
       <div className="auth-card">
-
-        <h1>SecureAuthentication</h1>
-        <p>Login to your account</p>
-
-        <form onSubmit={handleSubmit}>
-
-          <div className="form-group">
-            <label>Email</label>
-            <input
-              type="email"
-              name="email"
-              placeholder="Enter your email"
-              value={formData.email}
-              onChange={handleChange}
-            />
+        <div className="auth-brand">
+          <div className="auth-brand-mark">SA</div>
+          <div>
+            <h1 className="auth-title">SecureAuthentication</h1>
+            <p className="auth-subtitle">Welcome back. Sign in to continue.</p>
           </div>
-
-          <div className="form-group">
-            <label>Password</label>
-            <input
-              type="password"
-              name="password"
-              placeholder="Enter your password"
-              value={formData.password}
-              onChange={handleChange}
-            />
-          </div>
-
-          <button type="submit">
-            {loading ? "Logging in..." : "Login"}
-          </button>
-
-        </form>
-
-        <div className="links">
-
-          <Link to="/forgot-password">
-            Forgot Password?
-          </Link>
-
-          <Link to="/register">
-            Create Account
-          </Link>
-
         </div>
 
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="auth-group">
+            <label htmlFor="email">Email</label>
+            <div className="auth-input-wrap">
+              <input
+                id="email"
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleChange}
+              />
+              <span className="auth-input-icon">✉</span>
+            </div>
+          </div>
+
+          <div className="auth-group">
+            <label htmlFor="password">Password</label>
+            <div className="auth-input-wrap">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleChange}
+              />
+              <span className="auth-input-icon">⎈</span>
+              <button
+                type="button"
+                className="auth-password-toggle"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+          </div>
+
+          <button className="auth-button" type="submit" disabled={loading}>
+            {loading ? "Signing in..." : "Sign in"}
+          </button>
+        </form>
+
+        {message.text ? (
+          <div className={`auth-message ${message.type}`}>{message.text}</div>
+        ) : null}
+
+        <div className="auth-link-row">
+          <Link className="auth-link" to="/forgot-password">
+            Forgot Password?
+          </Link>
+          <Link className="auth-link" to="/register">
+            Create Account
+          </Link>
+        </div>
       </div>
     </div>
   );
